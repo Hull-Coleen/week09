@@ -9,9 +9,9 @@ const app = express();
   app.set('view engine', 'ejs')
   app.get('/', (req, res) => res.render('pages/index'))
   app.get('/getRate', function(request, response) {
-	 calcPostalRate(request, response);
-  app.get('/Rate', calcPostalRate);	 
+	 calcPostalRate(request, response); 
   });
+  app.get('/Rate', calcRate);
   app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
 function calcPostalRate(request, response) {
@@ -23,7 +23,32 @@ function calcPostalRate(request, response) {
 	var mailType = Number.parseInt(requestUrl.query.mailOption);
 	var weight = Number(requestUrl.query.weight);
      
-	computeRate(response, weight, mailType);
+	var answer = computeRate(response, weight, mailType);
+	var mail;
+	if ( mailType == 1)
+		mail = "stamped";
+	else if(mailType == 2)
+		mail = "metered";
+	else if(mailType == 3)
+		mail = "Flat Large Envelope";
+	else if (mailType == 4)
+		mail = "first class shipping";
+
+	// Set up a JSON object of the values we want to pass along to the EJS result page
+	var params = {weight: weight, mail: mail, answer: answer};
+	response.render('pages/result', params);
+}
+function calcRate(request, response) {
+	var requestUrl = url.parse(request.url, true);
+
+	console.log("Query parameters: " + JSON.stringify(requestUrl.query));
+	// TODO: Here we should check to make sure we have all the correct parameters
+
+	var mailType = Number.parseInt(requestUrl.query.mailOption);
+	var weight = Number(requestUrl.query.weight);
+	var result = computeRate(response, weight, mailType);
+	var answer = {answer: result.toString() }
+    response.status(200).json(answer);
 }
 function computeRate(response, weight, type) {
 	console.log(type);
@@ -107,46 +132,5 @@ function computeRate(response, weight, type) {
 		break;
 		
 	}
-	var test = {weight: weight, mail: type, result: result};
-	console.log(JSON.stringify(test));
-     console.log("test json" + test.mail); 
-	var mail;
-	if (type == 1)
-		mail = "stamped";
-	else if(type == 2)
-		mail = "metered";
-	else if(type == 3)
-		mail = "Flat Large Envelope";
-	else if (type == 4)
-		mail = "first class shipping";
-	
-    //var answer = {answer: result.toString() }
-    //response.status(200)
-     //.json(answer);
-	// Set up a JSON object of the values we want to pass along to the EJS result page
-	var params = {weight: weight, mail: mail, result: result};
-     console.log("params" + params.weight + "M" +  params.mail + "R" + params.result);
-	// Render the response, using the EJS page "result.ejs" in the pages directory
-	// Makes sure to pass it the parameters we need.
-	response.render('pages/result', params);
-	
-	
-
+	return result;
 }
-/*function fetchAnswer () {
-  console.log('inside fetchAnswer');
-  var operand1 = document.querySelector('#weight').value;
-  var operand2 = document.querySelector('#mailOption').value;
-  
-
-  fetch(`Rate?weight=${weight}&mailOption=${mailOption}`)
-    .then( (res) => {
-      return res.json()
-    })
-    .then( json => {
-      console.log(json);
-      let output = document.querySelector('#output');
-      output.innerText = json.answer;
-    })
-}
-*/
