@@ -9,7 +9,8 @@ const app = express();
   app.set('view engine', 'ejs')
   app.get('/', (req, res) => res.render('pages/index'))
   app.get('/getRate', function(request, response) {
-	 calcPostalRate(request, response); 
+	 calcPostalRate(request, response);
+  app.get('/Rate', calcPostalRate);	 
   });
   app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
@@ -119,12 +120,33 @@ function computeRate(response, weight, type) {
 	else if (type == 4)
 		mail = "first class shipping";
 	
-
+    //var answer = {answer: result.toString() }
+    //response.status(200)
+     //.json(answer);
 	// Set up a JSON object of the values we want to pass along to the EJS result page
 	var params = {weight: weight, mail: mail, result: result};
      console.log("params" + params.weight + "M" +  params.mail + "R" + params.result);
 	// Render the response, using the EJS page "result.ejs" in the pages directory
 	// Makes sure to pass it the parameters we need.
 	response.render('pages/result', params);
+	
+	
 
 }
+/*function fetchAnswer () {
+  console.log('inside fetchAnswer');
+  var operand1 = document.querySelector('#weight').value;
+  var operand2 = document.querySelector('#mailOption').value;
+  
+
+  fetch(`Rate?weight=${weight}&mailOption=${mailOption}`)
+    .then( (res) => {
+      return res.json()
+    })
+    .then( json => {
+      console.log(json);
+      let output = document.querySelector('#output');
+      output.innerText = json.answer;
+    })
+}
+*/
